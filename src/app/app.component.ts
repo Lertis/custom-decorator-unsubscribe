@@ -1,10 +1,23 @@
-import { Component } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
+import { Component } from "@angular/core";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { Unsubscriber } from "./decorators/unsubscriber";
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+	templateUrl: "./app.component.html"
 })
+// To be able to provide unsubscription destroyed$ property should be declared
+@Unsubscriber()
 export class AppComponent {
-  title = 'custom-decorator-unsubscribe';
+	private readonly destroyed$ = new Subject<void>();
+
+	constructor(private readonly http: HttpClient) {
+		this.http.get(`https://jsonplaceholder.typicode.com/users`).pipe(
+			takeUntil(this.destroyed$)
+		).subscribe((users) => {
+			console.log(`Users: ${users}`);
+		});
+	}
+
 }
